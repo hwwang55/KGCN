@@ -1,6 +1,5 @@
 import tensorflow as tf
 from abc import abstractmethod
-from model import KGCN
 
 LAYER_IDS = {}
 
@@ -40,7 +39,7 @@ class SumAggregator(Aggregator):
 
         with tf.variable_scope(self.name):
             self.weights = tf.get_variable(
-                shape=[self.dim, self.dim], initializer=KGCN.get_initializer(), name='weights')
+                shape=[self.dim, self.dim], initializer=tf.contrib.layers.xavier_initializer(), name='weights')
             self.bias = tf.get_variable(shape=[self.dim], initializer=tf.zeros_initializer(), name='bias')
 
     def _call(self, self_vectors, neighbor_vectors, neighbor_relations, user_embeddings):
@@ -55,8 +54,6 @@ class SumAggregator(Aggregator):
 
         # [batch_size, -1, n_neighbor]
         user_relation_scores = tf.reduce_mean(user_embeddings * neighbor_relations, axis=-1)
-
-        # [batch_size, -1, n_neighbor]
         user_relation_scores_normalized = tf.nn.softmax(user_relation_scores, axis=-1)
 
         # [batch_size, -1, n_neighbor, 1]
@@ -67,8 +64,7 @@ class SumAggregator(Aggregator):
 
         # [-1, dim]
         output = tf.reshape(self_vectors + neighbors_agg, [-1, self.dim])
-
-        # [-1, dim]
+        output = tf.nn.dropout(output, keep_prob=1-self.dropout)
         output = tf.matmul(output, self.weights) + self.bias
 
         # [batch_size, -1, dim]

@@ -23,23 +23,25 @@ def load_rating(args):
 
     n_user = len(set(rating_np[:, 0]))
     # item_num = len(set(rating_np[:, 1]))
-    train_data, eval_data, test_data = dataset_split(rating_np)
+    train_data, eval_data, test_data = dataset_split(rating_np, args)
 
     return n_user, train_data, eval_data, test_data
 
 
-def dataset_split(rating_np):
+def dataset_split(rating_np, args):
     print('splitting dataset ...')
 
     # train:eval:test = 6:2:2
-    train_ratio = 0.6
     eval_ratio = 0.2
+    test_ratio = 0.2
     n_ratings = rating_np.shape[0]
 
-    train_indices = np.random.choice(list(range(n_ratings)), size=int(n_ratings * train_ratio), replace=False)
-    left = set(range(n_ratings)) - set(train_indices)
-    eval_indices = np.random.choice(list(left), size=int(n_ratings * eval_ratio), replace=False)
-    test_indices = list(left - set(eval_indices))
+    eval_indices = np.random.choice(list(range(n_ratings)), size=int(n_ratings * eval_ratio), replace=False)
+    left = set(range(n_ratings)) - set(eval_indices)
+    test_indices = np.random.choice(list(left), size=int(n_ratings * test_ratio), replace=False)
+    train_indices = list(left - set(test_indices))
+    if args.ratio < 1:
+        train_indices = np.random.choice(list(train_indices), size=int(len(train_indices) * args.ratio), replace=False)
 
     train_data = rating_np[train_indices]
     eval_data = rating_np[eval_indices]

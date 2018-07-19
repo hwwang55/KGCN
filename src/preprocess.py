@@ -4,7 +4,7 @@ import numpy as np
 
 def read_item_index_to_entity_id_file():
     file = '../data/' + args.d + '/item_index2entity_id.txt'
-    print('reading item index to satori id file: ' + file + ' ...')
+    print('reading item index to entity id file: ' + file + ' ...')
     i = 0
     for line in open(file, encoding='utf-8').readlines():
         item_index = int(line.strip().split('\t')[0])
