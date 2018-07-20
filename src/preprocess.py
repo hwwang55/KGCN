@@ -106,7 +106,7 @@ if __name__ == '__main__':
     np.random.seed(555)
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-d', type=str, default='movie', help='which dataset to preprocess')
+    parser.add_argument('-d', type=str, default='music', help='which dataset to preprocess')
     args = parser.parse_args()
     DATASET = args.d
 
