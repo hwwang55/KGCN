@@ -1,9 +1,9 @@
 import argparse
 import numpy as np
 
-RATING_FILE_NAME = dict({'movie': 'ratings.csv', 'music': 'user_artists.dat'})
-SEP = dict({'movie': ',', 'music': '\t'})
-THRESHOLD = dict({'movie': 4, 'music': 0})
+RATING_FILE_NAME = dict({'movie': 'ratings.csv', 'book': 'BX-Book-Ratings.csv', 'music': 'user_artists.dat'})
+SEP = dict({'movie': ',', 'book': ';', 'music': '\t'})
+THRESHOLD = dict({'movie': 4, 'book': 6, 'music': 0})
 
 
 def read_item_index_to_entity_id_file():
@@ -11,7 +11,7 @@ def read_item_index_to_entity_id_file():
     print('reading item index to entity id file: ' + file + ' ...')
     i = 0
     for line in open(file, encoding='utf-8').readlines():
-        item_index = int(line.strip().split('\t')[0])
+        item_index = line.strip().split('\t')[0]
         satori_id = line.strip().split('\t')[1]
         item_index_old2new[item_index] = i
         entity_id2index[satori_id] = i
@@ -29,7 +29,11 @@ def convert_rating():
     for line in open(file, encoding='utf-8').readlines()[1:]:
         array = line.strip().split(SEP[DATASET])
 
-        item_index_old = int(array[1])
+        # remove prefix and suffix quotation marks for BX dataset
+        if DATASET == 'book':
+            array = list(map(lambda x: x[1:-1], array))
+
+        item_index_old = array[1]
         if item_index_old not in item_index_old2new:  # the item is not in the final item set
             continue
         item_index = item_index_old2new[item_index_old]
@@ -106,7 +110,7 @@ if __name__ == '__main__':
     np.random.seed(555)
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-d', type=str, default='music', help='which dataset to preprocess')
+    parser.add_argument('-d', type=str, default='book', help='which dataset to preprocess')
     args = parser.parse_args()
     DATASET = args.d
 

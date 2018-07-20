@@ -20,8 +20,6 @@ def train(args, data, show_loss):
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
         for step in range(args.n_epochs):
-            print('epoch %d' % step)
-
             # training
             np.random.shuffle(train_data)
             start = 0
@@ -36,8 +34,8 @@ def train(args, data, show_loss):
             eval_auc, eval_f1 = evaluation(sess, model, eval_data, args.batch_size)
             test_auc, test_f1 = evaluation(sess, model, test_data, args.batch_size)
 
-            print('train auc: %.4f  f1: %.4f    eval auc: %.4f  f1: %.4f    test auc: %.4f  f1: %.4f\n'
-                  % (train_auc, train_f1, eval_auc, eval_f1, test_auc, test_f1))
+            print('epoch %d    train auc: %.4f  f1: %.4f    eval auc: %.4f  f1: %.4f    test auc: %.4f  f1: %.4f'
+                  % (step, train_auc, train_f1, eval_auc, eval_f1, test_auc, test_f1))
 
 
 def evaluation(sess, model, data, batch_size):
