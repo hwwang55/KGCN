@@ -1,5 +1,5 @@
 import tensorflow as tf
-from aggregators import SumAggregator
+from aggregators import SumAggregator, ConcatAggregator, NeighborAggregator
 from sklearn.metrics import f1_score, roc_auc_score
 
 
@@ -16,6 +16,10 @@ class KGCN(object):
         self.lr = args.lr
         if args.aggregator == 'sum':
             self.aggregator_class = SumAggregator
+        elif args.aggregator == 'concat':
+            self.aggregator_class = ConcatAggregator
+        elif args.aggregator == 'neighbor':
+            self.aggregator_class = NeighborAggregator
         else:
             raise Exception("Unknown aggregator: " + args.aggregator)
 

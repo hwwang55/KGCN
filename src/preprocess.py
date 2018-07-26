@@ -3,7 +3,7 @@ import numpy as np
 
 RATING_FILE_NAME = dict({'movie': 'ratings.csv', 'book': 'BX-Book-Ratings.csv', 'music': 'user_artists.dat'})
 SEP = dict({'movie': ',', 'book': ';', 'music': '\t'})
-THRESHOLD = dict({'movie': 4, 'book': 6, 'music': 0})
+THRESHOLD = dict({'movie': 4, 'book': 0, 'music': 0})
 
 
 def read_item_index_to_entity_id_file():
@@ -110,7 +110,7 @@ if __name__ == '__main__':
     np.random.seed(555)
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-d', type=str, default='book', help='which dataset to preprocess')
+    parser.add_argument('-d', type=str, default='movie', help='which dataset to preprocess')
     args = parser.parse_args()
     DATASET = args.d
 
