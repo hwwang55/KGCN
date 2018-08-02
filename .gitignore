@@ -99,7 +99,6 @@ data/book/*
 data/music/*
 !data/movie/item_index2entity_id.txt
 !data/movie/kg.txt
-!data/book/item_index2entity_id.txt
-!data/book/kg.txt
 !data/music/item_index2entity_id.txt
 !data/music/kg.txt
+!data/music/user_artists.dat
