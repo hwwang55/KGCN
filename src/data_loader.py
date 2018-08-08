@@ -3,11 +3,11 @@ import os
 
 
 def load_data(args):
-    n_user, train_data, eval_data, test_data = load_rating(args)
+    n_user, n_item, train_data, eval_data, test_data = load_rating(args)
     n_entity, n_relation, adj_entity, adj_relation = load_kg(args)
     print('data loaded.')
 
-    return n_user, n_entity, n_relation, train_data, eval_data, test_data, adj_entity, adj_relation
+    return n_user, n_item, n_entity, n_relation, train_data, eval_data, test_data, adj_entity, adj_relation
 
 
 def load_rating(args):
@@ -22,10 +22,10 @@ def load_rating(args):
         np.save(rating_file + '.npy', rating_np)
 
     n_user = len(set(rating_np[:, 0]))
-    # item_num = len(set(rating_np[:, 1]))
+    n_item = len(set(rating_np[:, 1]))
     train_data, eval_data, test_data = dataset_split(rating_np, args)
 
-    return n_user, train_data, eval_data, test_data
+    return n_user, n_item, train_data, eval_data, test_data
 
 
 def dataset_split(rating_np, args):

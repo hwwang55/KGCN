@@ -115,3 +115,6 @@ class KGCN(object):
         scores[scores < 0.5] = 0
         f1 = f1_score(y_true=labels, y_pred=scores)
         return auc, f1
+
+    def get_scores(self, sess, feed_dict):
+        return sess.run([self.item_indices, self.scores_normalized], feed_dict)
