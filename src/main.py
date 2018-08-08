@@ -20,8 +20,8 @@ parser.add_argument('--l2_weight', type=float, default=1e-7, help='weight of l2 
 parser.add_argument('--lr', type=float, default=0.02, help='learning rate')
 parser.add_argument('--ratio', type=float, default=1, help='size of training dataset')
 
-# book
 '''
+# book
 parser.add_argument('--dataset', type=str, default='book', help='which dataset to use')
 parser.add_argument('--aggregator', type=str, default='sum', help='which aggregator to use,')
 parser.add_argument('--n_epochs', type=int, default=10, help='the number of epochs')
@@ -34,8 +34,8 @@ parser.add_argument('--lr', type=float, default=2e-4, help='learning rate')
 parser.add_argument('--ratio', type=float, default=1, help='size of training dataset')
 '''
 
-# music
 '''
+# music
 parser.add_argument('--dataset', type=str, default='music', help='which dataset to use')
 parser.add_argument('--aggregator', type=str, default='sum', help='which aggregator to use,')
 parser.add_argument('--n_epochs', type=int, default=10, help='the number of epochs')
