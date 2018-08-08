@@ -3,7 +3,7 @@ import numpy as np
 from model import KGCN
 
 
-def train(args, data, show_loss):
+def train(args, data, show_loss, show_topk):
     n_user, n_item, n_entity, n_relation = data[0], data[1], data[2], data[3]
     train_data, eval_data, test_data = data[4], data[5], data[6]
     adj_entity, adj_relation = data[7], data[8]
@@ -11,7 +11,6 @@ def train(args, data, show_loss):
     model = KGCN(args, n_user, n_entity, n_relation, adj_entity, adj_relation)
 
     # top-K evaluation settings
-    topk = False
     user_num = 100
     k_list = [1, 2, 5, 10, 20, 50, 100]
     train_record = get_user_record(train_data, True)
@@ -42,7 +41,7 @@ def train(args, data, show_loss):
                   % (step, train_auc, train_f1, eval_auc, eval_f1, test_auc, test_f1))
 
             # top-K evaluation
-            if topk:
+            if show_topk:
                 precision, recall = topk_eval(
                     sess, model, user_list, train_record, test_record, item_set, k_list, args.batch_size)
                 print('precision: ', end='')

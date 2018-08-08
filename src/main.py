@@ -1,5 +1,6 @@
 import argparse
 import numpy as np
+from time import time
 from data_loader import load_data
 from train import train
 
@@ -48,7 +49,12 @@ parser.add_argument('--lr', type=float, default=5e-4, help='learning rate')
 parser.add_argument('--ratio', type=float, default=1, help='size of training dataset')
 '''
 
-args = parser.parse_args()
 show_loss = False
+show_time = False
+show_topk = False
+
+t = time()
+args = parser.parse_args()
 data = load_data(args)
-train(args, data, show_loss)
+train(args, data, show_loss, show_topk)
+print('time used: %d s' % (time() - t))
