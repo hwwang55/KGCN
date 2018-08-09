@@ -54,7 +54,10 @@ show_time = False
 show_topk = False
 
 t = time()
+
 args = parser.parse_args()
 data = load_data(args)
 train(args, data, show_loss, show_topk)
-print('time used: %d s' % (time() - t))
+
+if show_time:
+    print('time used: %d s' % (time() - t))
