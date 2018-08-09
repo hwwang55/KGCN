@@ -5,6 +5,16 @@ from sklearn.metrics import f1_score, roc_auc_score
 
 class KGCN(object):
     def __init__(self, args, n_user, n_entity, n_relation, adj_entity, adj_relation):
+        self._parse_args(args, adj_entity, adj_relation)
+        self._build_inputs()
+        self._build_model(n_user, n_entity, n_relation)
+        self._build_train()
+
+    @staticmethod
+    def get_initializer():
+        return tf.contrib.layers.xavier_initializer()
+
+    def _parse_args(self, args, adj_entity, adj_relation):
         # [entity_num, neighbor_sample_size]
         self.adj_entity = adj_entity
         self.adj_relation = adj_relation
@@ -22,14 +32,6 @@ class KGCN(object):
             self.aggregator_class = NeighborAggregator
         else:
             raise Exception("Unknown aggregator: " + args.aggregator)
-
-        self._build_inputs()
-        self._build_model(n_user, n_entity, n_relation)
-        self._build_train()
-
-    @staticmethod
-    def get_initializer():
-        return tf.contrib.layers.xavier_initializer()
 
     def _build_inputs(self):
         self.user_indices = tf.placeholder(dtype=tf.int32, shape=[None], name='user_indices')
