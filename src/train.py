@@ -26,7 +26,8 @@ def train(args, data, show_loss, show_topk):
             # training
             np.random.shuffle(train_data)
             start = 0
-            while start + args.batch_size <= train_data.shape[0]:  # skip the last batch if its size < batch size
+            # skip the last incomplete minibatch if its size < batch size
+            while start + args.batch_size <= train_data.shape[0]:
                 _, loss = model.train(sess, get_feed_dict(model, train_data, start, start + args.batch_size))
                 start += args.batch_size
                 if show_loss:
@@ -87,6 +88,8 @@ def topk_eval(sess, model, user_list, train_record, test_record, item_set, k_lis
             for item, score in zip(items, scores):
                 item_score_map[item] = score
             start += batch_size
+
+        # padding the last incomplete minibatch if exists
         if start < len(test_item_list):
             items, scores = model.get_scores(
                 sess, {model.user_indices: [user] * batch_size,
@@ -94,6 +97,7 @@ def topk_eval(sess, model, user_list, train_record, test_record, item_set, k_lis
                                batch_size - len(test_item_list) + start)})
             for item, score in zip(items, scores):
                 item_score_map[item] = score
+
         item_score_pair_sorted = sorted(item_score_map.items(), key=lambda x: x[1], reverse=True)
         item_sorted = [i[0] for i in item_score_pair_sorted]
 
@@ -119,5 +123,3 @@ def get_user_record(data, is_train):
                 user_history_dict[user] = set()
             user_history_dict[user].add(item)
     return user_history_dict
-
-
