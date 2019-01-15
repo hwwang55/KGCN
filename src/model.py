@@ -1,11 +1,11 @@
 import tensorflow as tf
-from aggregators import SumAggregator, ConcatAggregator, NeighborAggregator
+from aggregators import SumAggregator, ConcatAggregator, NeighborAggregator, LabelAggregator
 from sklearn.metrics import f1_score, roc_auc_score
 
 
 class KGCN(object):
-    def __init__(self, args, n_user, n_entity, n_relation, adj_entity, adj_relation):
-        self._parse_args(args, adj_entity, adj_relation)
+    def __init__(self, args, n_user, n_entity, n_relation, adj_entity, adj_relation, interaction_table, offset):
+        self._parse_args(args, adj_entity, adj_relation, interaction_table, offset)
         self._build_inputs()
         self._build_model(n_user, n_entity, n_relation)
         self._build_train()
@@ -14,10 +14,16 @@ class KGCN(object):
     def get_initializer():
         return tf.contrib.layers.xavier_initializer()
 
-    def _parse_args(self, args, adj_entity, adj_relation):
+    def _parse_args(self, args, adj_entity, adj_relation, interaction_table, offset):
         # [entity_num, neighbor_sample_size]
         self.adj_entity = adj_entity
         self.adj_relation = adj_relation
+
+        # == for LS regularization == #
+        self.interaction_table = interaction_table
+        self.offset = offset
+        self.ls_weight = args.ls_weight
+
         self.n_iter = args.n_iter
         self.batch_size = args.batch_size
         self.n_neighbor = args.neighbor_sample_size
@@ -34,8 +40,8 @@ class KGCN(object):
             raise Exception("Unknown aggregator: " + args.aggregator)
 
     def _build_inputs(self):
-        self.user_indices = tf.placeholder(dtype=tf.int32, shape=[None], name='user_indices')
-        self.item_indices = tf.placeholder(dtype=tf.int32, shape=[None], name='item_indices')
+        self.user_indices = tf.placeholder(dtype=tf.int64, shape=[None], name='user_indices')
+        self.item_indices = tf.placeholder(dtype=tf.int64, shape=[None], name='item_indices')
         self.labels = tf.placeholder(dtype=tf.float32, shape=[None], name='labels')
 
     def _build_model(self, n_user, n_entity, n_relation):
@@ -56,6 +62,9 @@ class KGCN(object):
 
         # [batch_size, dim]
         self.item_embeddings, self.aggregators = self.aggregate(entities, relations)
+
+        # == for LS regularization == #
+        self._build_label_smoothness_loss(entities, relations)
 
         # [batch_size]
         self.scores = tf.reduce_sum(self.user_embeddings * self.item_embeddings, axis=1)
@@ -97,6 +106,39 @@ class KGCN(object):
         res = tf.reshape(entity_vectors[0], [self.batch_size, self.dim])
 
         return res, aggregators
+
+    # == for LS regularization == #
+    def _build_label_smoothness_loss(self, entities, relations):
+        initial_labels = []
+        holdout_masks = []  # False means this item is held out
+        holdout_item_for_user = None
+
+        for entities_per_iter in entities:
+            # [batch_size, 1]
+            users = tf.expand_dims(self.user_indices, 1)
+            # [batch_size, n_neighbor^i]
+            user_entity_concat = users * self.offset + entities_per_iter
+
+            # the first one in entities is the items to be held out
+            if holdout_item_for_user is None:
+                holdout_item_for_user = user_entity_concat
+
+            # [batch_size, n_neighbor^i]
+            holdout_mask = tf.cast(holdout_item_for_user - user_entity_concat, tf.bool)
+            initial_label = self.interaction_table.lookup(user_entity_concat)
+            initial_label = tf.cast(holdout_mask, tf.float32) * initial_label + tf.cast(
+                tf.logical_not(holdout_mask), tf.float32) * tf.constant(0.5)
+
+            holdout_masks.append(holdout_mask)
+            initial_labels.append(initial_label)
+
+        relation_vectors = [tf.nn.embedding_lookup(self.relation_emb_matrix, i) for i in relations]
+        aggregator = LabelAggregator
+        for i in range(self.n_iter):
+            labels_next_iter = []
+            for hop in range(self.n_iter - i):
+                pass
+
 
     def _build_train(self):
         self.base_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(labels=self.labels, logits=self.scores))

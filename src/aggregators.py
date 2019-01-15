@@ -126,7 +126,7 @@ class NeighborAggregator(Aggregator):
         neighbors_agg = self._mix_neighbor_vectors(neighbor_vectors, neighbor_relations, user_embeddings)
 
         # [-1, dim]
-        output = tf.reshape(self_vectors, [-1, self.dim])
+        output = tf.reshape(neighbors_agg, [-1, self.dim])
         output = tf.nn.dropout(output, keep_prob=1-self.dropout)
         output = tf.matmul(output, self.weights) + self.bias
 
@@ -134,3 +134,19 @@ class NeighborAggregator(Aggregator):
         output = tf.reshape(output, [self.batch_size, -1, self.dim])
 
         return self.act(output)
+
+
+class LabelAggregator(Aggregator):
+    def __init__(self, batch_size, dim, name=None):
+        super(LabelAggregator, self).__init__(batch_size, dim, 0., None, name)
+
+    def _call(self, self_labels, neighbor_labels, neighbor_relations, user_embeddings):
+        # [batch_size, 1, 1, dim]
+        user_embeddings = tf.reshape(user_embeddings, [self.batch_size, 1, 1, self.dim])
+
+        # [batch_size, -1, n_neighbor]
+        user_relation_scores = tf.reduce_mean(user_embeddings * neighbor_relations, axis=-1)
+        user_relation_scores_normalized = tf.nn.softmax(user_relation_scores, axis=-1)
+
+        # [batch_size, -1]
+        neighbors_aggregated = tf.reduce_mean(user_relation_scores_normalized * neighbor_labels, axis=-1)

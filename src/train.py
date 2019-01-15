@@ -4,24 +4,49 @@ from model import KGCN
 
 
 def train(args, data, show_loss, show_topk):
-    n_user, n_item, n_entity, n_relation = data[0], data[1], data[2], data[3]
-    train_data, eval_data, test_data = data[4], data[5], data[6]
-    adj_entity, adj_relation = data[7], data[8]
+    #n_user, n_item, n_entity, n_relation = data[0], data[1], data[2], data[3]
+    #train_data, eval_data, test_data = data[4], data[5], data[6]
+    #adj_entity, adj_relation = data[7], data[8]
 
-    model = KGCN(args, n_user, n_entity, n_relation, adj_entity, adj_relation)
+    n_user = 3
+    n_item = 2
+    n_entity = 5
+    n_relation = 2
+    train_data = np.array([[0, 0, 1],
+                           [0, 1, 1],
+                           [1, 0, 0],
+                           [2, 1, 0]])
+    eval_data = np.array([[1, 1, 1]])
+    test_data = np.array([[2, 0, 1]])
+    adj_entity = np.array([[1, 2, 4],
+                           [0, 0, 3],
+                           [0, 4, 4],
+                           [1, 1, 1],
+                           [0, 2, 2]])
+    adj_relation = np.array([[0, 1, 1],
+                             [0, 0, 1],
+                             [1, 0, 0],
+                             [1, 1, 1],
+                             [1, 0, 0]])
 
-    # top-K evaluation settings
-    user_num = 100
-    k_list = [1, 2, 5, 10, 20, 50, 100]
-    train_record = get_user_record(train_data, True)
-    test_record = get_user_record(test_data, False)
-    user_list = list(set(train_record.keys()) & set(test_record.keys()))
-    if len(user_list) > user_num:
-        user_list = np.random.choice(user_list, size=user_num, replace=False)
-    item_set = set(list(range(n_item)))
+    interaction_table, offset = get_interaction_table(train_data, n_entity) if args.ls_weight > 0 else (None, None)
+    model = KGCN(args, n_user, n_entity, n_relation, adj_entity, adj_relation, interaction_table, offset)
 
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
+        interaction_table.init.run()
+        print(sess.run(model.holdout_masks, feed_dict=get_feed_dict(model, train_data, 0, 4)))
+        #print(sess.run(model.ui, feed_dict=get_feed_dict(model, train_data, 0, 4)))
+        print(sess.run(model.initial_labels, feed_dict=get_feed_dict(model, train_data, 0, 4)))
+        exit(0)
+
+    # top-K evaluation settings
+    user_list, train_record, test_record, item_set, k_list = topk_settings(show_topk, train_data, test_data, n_item)
+
+    with tf.Session() as sess:
+        sess.run(tf.global_variables_initializer())
+        interaction_table.init.run()
+
         for step in range(args.n_epochs):
             # training
             np.random.shuffle(train_data)
@@ -53,6 +78,36 @@ def train(args, data, show_loss, show_topk):
                 for i in recall:
                     print('%.4f\t' % i, end='')
                 print('\n')
+
+
+# interaction table is used for fetching user-item interaction label in LS regularization
+# {user_id * 10^offset + item_id -> y_{user_id, item_id}}
+# updating table is used for updating labels during label propagation
+# {user_id * 10^offset + item_id -> 1}
+def get_interaction_table(train_data, n_entity):
+    offset = len(str(n_entity))
+    offset = 10 ** offset
+    keys = train_data[:, 0] * offset + train_data[:, 1]
+    values = train_data[:, 2].astype(np.float32)
+
+    interaction_table = tf.contrib.lookup.HashTable(tf.contrib.lookup.KeyValueTensorInitializer(
+        keys=keys, values=values), default_value=0.5)
+    update_table = tf.contrib.lookup.HashTable(tf.contrib.lookup.KeyValueTensorInitializer(
+        keys=keys, values=np.ones_like(values).astype(np.float32)), default_value=0.0)
+    return interaction_table, offset
+
+
+def topk_settings(show_topk, train_data, test_data, n_item):
+    if show_topk:
+        user_num = 100
+        k_list = [1, 2, 5, 10, 20, 50, 100]
+        train_record = get_user_record(train_data, True)
+        test_record = get_user_record(test_data, False)
+        user_list = list(set(train_record.keys()) & set(test_record.keys()))
+        if len(user_list) > user_num:
+            user_list = np.random.choice(user_list, size=user_num, replace=False)
+        item_set = set(list(range(n_item)))
+        return user_list, train_record, test_record, item_set, k_list
 
 
 def get_feed_dict(model, data, start, end):
