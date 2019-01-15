@@ -64,7 +64,8 @@ class KGCN(object):
         self.item_embeddings, self.aggregators = self.aggregate(entities, relations)
 
         # == for LS regularization == #
-        self._build_label_smoothness_loss(entities, relations)
+        if self.ls_weight > 0:
+            self._build_label_smoothness_loss(entities, relations)
 
         # [batch_size]
         self.scores = tf.reduce_sum(self.user_embeddings * self.item_embeddings, axis=1)
@@ -81,6 +82,7 @@ class KGCN(object):
             relations.append(neighbor_relations)
         return entities, relations
 
+    # feature propagation
     def aggregate(self, entities, relations):
         aggregators = []  # store all aggregators
         entity_vectors = [tf.nn.embedding_lookup(self.entity_emb_matrix, i) for i in entities]
@@ -99,7 +101,8 @@ class KGCN(object):
                 vector = aggregator(self_vectors=entity_vectors[hop],
                                     neighbor_vectors=tf.reshape(entity_vectors[hop + 1], shape),
                                     neighbor_relations=tf.reshape(relation_vectors[hop], shape),
-                                    user_embeddings=self.user_embeddings)
+                                    user_embeddings=self.user_embeddings,
+                                    masks=None)
                 entity_vectors_next_iter.append(vector)
             entity_vectors = entity_vectors_next_iter
 
@@ -109,10 +112,10 @@ class KGCN(object):
 
     # == for LS regularization == #
     def _build_label_smoothness_loss(self, entities, relations):
-        initial_labels = []
-        holdout_masks = []  # False means this item is held out
+        # calculate initial labels; calculate updating masks for label propagation
+        entity_labels = []
+        clamp_masks = []  # True means the label of this item is clamped during label propagation
         holdout_item_for_user = None
-
         for entities_per_iter in entities:
             # [batch_size, 1]
             users = tf.expand_dims(self.user_indices, 1)
@@ -124,29 +127,50 @@ class KGCN(object):
                 holdout_item_for_user = user_entity_concat
 
             # [batch_size, n_neighbor^i]
-            holdout_mask = tf.cast(holdout_item_for_user - user_entity_concat, tf.bool)
+            holdout_mask = tf.cast(holdout_item_for_user - user_entity_concat, tf.bool)  # false if the item is held out
             initial_label = self.interaction_table.lookup(user_entity_concat)
+            clamp_mask = tf.cast(initial_label - tf.constant(0.5), tf.bool)  # true if the entity is a labeled item
+            clamp_mask = tf.math.logical_and(clamp_mask, holdout_mask)  # remove held-out items
             initial_label = tf.cast(holdout_mask, tf.float32) * initial_label + tf.cast(
-                tf.logical_not(holdout_mask), tf.float32) * tf.constant(0.5)
+                tf.math.logical_not(holdout_mask), tf.float32) * tf.constant(0.5)  # label initialization
 
-            holdout_masks.append(holdout_mask)
-            initial_labels.append(initial_label)
+            clamp_masks.append(clamp_mask)
+            entity_labels.append(initial_label)
+        clamp_masks = clamp_masks[:-1]  # we do not need the clamp_mask for the last iteration
 
+        # label propagation
         relation_vectors = [tf.nn.embedding_lookup(self.relation_emb_matrix, i) for i in relations]
-        aggregator = LabelAggregator
+        aggregator = LabelAggregator(self.batch_size, self.dim)
         for i in range(self.n_iter):
-            labels_next_iter = []
+            entity_labels_next_iter = []
             for hop in range(self.n_iter - i):
-                pass
+                vector = aggregator(self_vectors=entity_labels[hop],
+                                    neighbor_vectors=tf.reshape(
+                                        entity_labels[hop + 1], [self.batch_size, -1, self.n_neighbor]),
+                                    neighbor_relations=tf.reshape(
+                                        relation_vectors[hop], [self.batch_size, -1, self.n_neighbor, self.dim]),
+                                    user_embeddings=self.user_embeddings,
+                                    masks=clamp_masks[hop])
+                entity_labels_next_iter.append(vector)
+            entity_labels = entity_labels_next_iter
 
+        self.predicted_labels = tf.squeeze(entity_labels[0], axis=-1)
 
     def _build_train(self):
-        self.base_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(labels=self.labels, logits=self.scores))
-        self.l2_loss = tf.nn.l2_loss(self.user_emb_matrix) + tf.nn.l2_loss(self.entity_emb_matrix)
-        self.l2_loss = self.l2_loss + tf.nn.l2_loss(self.relation_emb_matrix)
+        self.base_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
+            labels=self.labels, logits=self.scores))
+
+        self.l2_loss = tf.nn.l2_loss(self.user_emb_matrix) + tf.nn.l2_loss(
+            self.entity_emb_matrix) + tf.nn.l2_loss(self.relation_emb_matrix)
         for aggregator in self.aggregators:
             self.l2_loss = self.l2_loss + tf.nn.l2_loss(aggregator.weights)
         self.loss = self.base_loss + self.l2_weight * self.l2_loss
+
+        if self.ls_weight > 0:
+            self.ls_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
+                labels=self.labels, logits=self.predicted_labels))
+            self.loss += self.ls_weight * self.ls_loss
+
         self.optimizer = tf.train.AdamOptimizer(self.lr).minimize(self.loss)
 
     def train(self, sess, feed_dict):

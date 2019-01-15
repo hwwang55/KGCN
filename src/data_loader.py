@@ -91,8 +91,8 @@ def construct_adj(args, kg, entity_num):
     print('constructing adjacency matrix ...')
     # each line of adj_entity stores the sampled neighbor entities for a given entity
     # each line of adj_relation stores the corresponding sampled neighbor relations
-    adj_entity = np.zeros([entity_num, args.neighbor_sample_size], dtype=np.int32)
-    adj_relation = np.zeros([entity_num, args.neighbor_sample_size], dtype=np.int32)
+    adj_entity = np.zeros([entity_num, args.neighbor_sample_size], dtype=np.int64)
+    adj_relation = np.zeros([entity_num, args.neighbor_sample_size], dtype=np.int64)
     for entity in range(entity_num):
         neighbors = kg[entity]
         n_neighbors = len(neighbors)
