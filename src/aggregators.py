@@ -29,7 +29,7 @@ class Aggregator(object):
         return outputs
 
     @abstractmethod
-    def _call(self, self_vectors, neighbor_vectors, neighbor_relations, user_relation_scores):
+    def _call(self, self_vectors, neighbor_vectors, neighbor_relations, user_embeddings):
         # dimension:
         # self_vectors: [batch_size, -1, dim]
         # neighbor_vectors: [batch_size, -1, n_neighbor, dim]
@@ -45,7 +45,7 @@ class Aggregator(object):
 
             # [batch_size, -1, n_neighbor]
             user_relation_scores = tf.reduce_mean(user_embeddings * neighbor_relations, axis=-1)
-            user_relation_scores_normalized = tf.nn.softmax(user_relation_scores, dim=-1)
+            user_relation_scores_normalized = tf.nn.softmax(user_relation_scores, axis=-1)
 
             # [batch_size, -1, n_neighbor, 1]
             user_relation_scores_normalized = tf.expand_dims(user_relation_scores_normalized, axis=-1)
