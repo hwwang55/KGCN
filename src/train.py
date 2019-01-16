@@ -53,7 +53,8 @@ def train(args, data, show_loss, show_topk):
 
 
 # interaction_table is used for fetching user-item interaction label in LS regularization
-# {user_id * 10^offset + item_id -> y_{user_id, item_id}}
+# key: user_id * 10^offset + item_id
+# value: y_{user_id, item_id}
 def get_interaction_table(train_data, n_entity):
     offset = len(str(n_entity))
     offset = 10 ** offset

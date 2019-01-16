@@ -114,7 +114,7 @@ class KGCN(object):
     def _build_label_smoothness_loss(self, entities, relations):
         # calculate initial labels; calculate updating masks for label propagation
         entity_labels = []
-        clamp_masks = []  # True means the label of this item is clamped during label propagation
+        clamp_masks = []  # True means the label of this item is clamped to initial value during label propagation
         holdout_item_for_user = None
         for entities_per_iter in entities:
             # [batch_size, 1]
@@ -127,9 +127,9 @@ class KGCN(object):
                 holdout_item_for_user = user_entity_concat
 
             # [batch_size, n_neighbor^i]
-            holdout_mask = tf.cast(holdout_item_for_user - user_entity_concat, tf.bool)  # false if the item is held out
             initial_label = self.interaction_table.lookup(user_entity_concat)
-            clamp_mask = tf.cast(initial_label - tf.constant(0.5), tf.bool)  # true if the entity is a labeled item
+            holdout_mask = tf.cast(holdout_item_for_user - user_entity_concat, tf.bool)  # False if the item is held out
+            clamp_mask = tf.cast(initial_label - tf.constant(0.5), tf.bool)  # True if the entity is a labeled item
             clamp_mask = tf.math.logical_and(clamp_mask, holdout_mask)  # remove held-out items
             initial_label = tf.cast(holdout_mask, tf.float32) * initial_label + tf.cast(
                 tf.math.logical_not(holdout_mask), tf.float32) * tf.constant(0.5)  # label initialization
