@@ -46,7 +46,7 @@ class Aggregator(object):
 
             # [batch_size, -1, n_neighbor]
             user_relation_scores = tf.reduce_mean(user_embeddings * neighbor_relations, axis=-1)
-            user_relation_scores_normalized = tf.nn.softmax(user_relation_scores, axis=-1)
+            user_relation_scores_normalized = tf.nn.softmax(user_relation_scores, dim=-1)
 
             # [batch_size, -1, n_neighbor, 1]
             user_relation_scores_normalized = tf.expand_dims(user_relation_scores_normalized, axis=-1)
@@ -147,11 +147,11 @@ class LabelAggregator(Aggregator):
 
         # [batch_size, -1, n_neighbor]
         user_relation_scores = tf.reduce_mean(user_embeddings * neighbor_relations, axis=-1)
-        user_relation_scores_normalized = tf.nn.softmax(user_relation_scores, axis=-1)
+        user_relation_scores_normalized = tf.nn.softmax(user_relation_scores, dim=-1)
 
         # [batch_size, -1]
         neighbors_aggregated = tf.reduce_mean(user_relation_scores_normalized * neighbor_labels, axis=-1)
         output = tf.cast(masks, tf.float32) * self_labels + tf.cast(
-            tf.math.logical_not(masks), tf.float32) * neighbors_aggregated
+            tf.logical_not(masks), tf.float32) * neighbors_aggregated
 
         return output

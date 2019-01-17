@@ -130,9 +130,9 @@ class KGCN(object):
             initial_label = self.interaction_table.lookup(user_entity_concat)
             holdout_mask = tf.cast(holdout_item_for_user - user_entity_concat, tf.bool)  # False if the item is held out
             clamp_mask = tf.cast(initial_label - tf.constant(0.5), tf.bool)  # True if the entity is a labeled item
-            clamp_mask = tf.math.logical_and(clamp_mask, holdout_mask)  # remove held-out items
+            clamp_mask = tf.logical_and(clamp_mask, holdout_mask)  # remove held-out items
             initial_label = tf.cast(holdout_mask, tf.float32) * initial_label + tf.cast(
-                tf.math.logical_not(holdout_mask), tf.float32) * tf.constant(0.5)  # label initialization
+                tf.logical_not(holdout_mask), tf.float32) * tf.constant(0.5)  # label initialization
 
             clamp_masks.append(clamp_mask)
             entity_labels.append(initial_label)
