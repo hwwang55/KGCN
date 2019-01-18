@@ -18,7 +18,7 @@ def load_rating(args):
     if os.path.exists(rating_file + '.npy'):
         rating_np = np.load(rating_file + '.npy')
     else:
-        rating_np = np.loadtxt(rating_file + '.txt', dtype=np.int32)
+        rating_np = np.loadtxt(rating_file + '.txt', dtype=np.int64)
         np.save(rating_file + '.npy', rating_np)
 
     n_user = len(set(rating_np[:, 0]))
@@ -58,7 +58,7 @@ def load_kg(args):
     if os.path.exists(kg_file + '.npy'):
         kg_np = np.load(kg_file + '.npy')
     else:
-        kg_np = np.loadtxt(kg_file + '.txt', dtype=np.int32)
+        kg_np = np.loadtxt(kg_file + '.txt', dtype=np.int64)
         np.save(kg_file + '.npy', kg_np)
 
     n_entity = len(set(kg_np[:, 0]) | set(kg_np[:, 2]))
