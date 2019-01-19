@@ -1,6 +1,6 @@
-# KGCN
+# KGCN / KGCN-LS
 
-This repository is the implementation of KGCN.
+This repository is the implementation of KGCN and KGCN-LS.
 
 
 ### Files in the folder
