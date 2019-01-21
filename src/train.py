@@ -35,17 +35,13 @@ def train(args, data, show_loss, show_topk):
             eval_auc, eval_f1 = ctr_eval(sess, model, eval_data, args.batch_size)
             test_auc, test_f1 = ctr_eval(sess, model, test_data, args.batch_size)
 
-            #'''
             print('epoch %d    train auc: %.4f  f1: %.4f    eval auc: %.4f  f1: %.4f    test auc: %.4f  f1: %.4f'
                   % (step, train_auc, train_f1, eval_auc, eval_f1, test_auc, test_f1))
-            #'''
-            #print('epoch %d    Train AUC: %.4f    Test AUC: %.4f' % (step, train_auc, test_auc), end='    ')
 
             # top-K evaluation
             if show_topk:
                 precision, recall = topk_eval(
                     sess, model, user_list, train_record, test_record, item_set, k_list, args.batch_size)
-                #'''
                 print('precision: ', end='')
                 for i in precision:
                     print('%.4f\t' % i, end='')
@@ -54,8 +50,6 @@ def train(args, data, show_loss, show_topk):
                 for i in recall:
                     print('%.4f\t' % i, end='')
                 print('\n')
-                #'''
-                #print('R@10: %.4f' % recall[0])
 
 
 # interaction_table is used for fetching user-item interaction label in LS regularization
@@ -77,7 +71,6 @@ def topk_settings(show_topk, train_data, test_data, n_item):
     if show_topk:
         user_num = 100
         k_list = [1, 2, 5, 10, 20, 50, 100]
-        #k_list = [10]
         train_record = get_user_record(train_data, True)
         test_record = get_user_record(test_data, False)
         user_list = list(set(train_record.keys()) & set(test_record.keys()))
