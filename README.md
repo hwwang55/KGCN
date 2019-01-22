@@ -14,7 +14,7 @@ This repository is the implementation of KGCN and KGCN-LS.
     - `kg.txt`: knowledge graph file;
     - `user_artists.dat`: raw rating file of Last.FM;
   - `restaurant/`
-    - `Dianping-Food.tar.gz`: containing the final rating file and the final KG file;
+    - `Dianping-Food.zip`: containing the final rating file and the final KG file;
 - `src/`: implementations of KGCN and KGCN-LS.
 
 
