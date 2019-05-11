@@ -1,6 +1,19 @@
 # KGCN / KGCN-LS
 
-This repository is the implementation of KGCN and KGCN-LS.
+This repository is the implementation of KGCN ([arXiv](https://arxiv.org/abs/1901.08907)) and KGCN-LS:
+
+> Knowledge Graph Convolutional Networks for Recommender Systems  
+Hongwei Wang, Miao Zhao, Xing Xie, Wenjie Li, Minyi Guo.  
+In Proceedings of The 2019 Web Conference (WWW 2019)
+
+> Knowledge Graph Convolutional Networks for Recommender Systems with Label Smoothness Regularizations  
+Hongwei Wang, Fuzheng Zhang, Mengdi Zhang, Jure Leskovec, Miao Zhao, Wenjie Li, Zhongyuan Wang.  
+In Proceedings of The 25th ACM SIGKDD Conference on Knowledge Discovery and Data Mining (KDD 2019)
+
+![](https://github.com/hwwang55/KGCN/blob/master/framework.png)
+
+KGCN is **K**nowledge **G**raph **C**onvolutional **N**etworks for recommender systems, which uses the technique of graph convolutional networks (GCN) to proces knowledge graphs for the purpose of recommendation.
+KGCN-LS (**K**nowledge **G**raph **C**onvolutional **N**etworks with **L**abel **S**moothness regularization) further improves KGCN by adding a label smoothness regularizer in the loss function for more powerful and adaptive learning.
 
 
 ### Files in the folder
