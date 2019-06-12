@@ -135,23 +135,3 @@ class NeighborAggregator(Aggregator):
         output = tf.reshape(output, [self.batch_size, -1, self.dim])
 
         return self.act(output)
-
-
-class LabelAggregator(Aggregator):
-    def __init__(self, batch_size, dim, name=None):
-        super(LabelAggregator, self).__init__(batch_size, dim, 0., None, name)
-
-    def _call(self, self_labels, neighbor_labels, neighbor_relations, user_embeddings, masks):
-        # [batch_size, 1, 1, dim]
-        user_embeddings = tf.reshape(user_embeddings, [self.batch_size, 1, 1, self.dim])
-
-        # [batch_size, -1, n_neighbor]
-        user_relation_scores = tf.reduce_mean(user_embeddings * neighbor_relations, axis=-1)
-        user_relation_scores_normalized = tf.nn.softmax(user_relation_scores, dim=-1)
-
-        # [batch_size, -1]
-        neighbors_aggregated = tf.reduce_mean(user_relation_scores_normalized * neighbor_labels, axis=-1)
-        output = tf.cast(masks, tf.float32) * self_labels + tf.cast(
-            tf.logical_not(masks), tf.float32) * neighbors_aggregated
-
-        return output

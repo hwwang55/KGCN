@@ -8,16 +8,13 @@ def train(args, data, show_loss, show_topk):
     train_data, eval_data, test_data = data[4], data[5], data[6]
     adj_entity, adj_relation = data[7], data[8]
 
-    interaction_table, offset = get_interaction_table(train_data, n_entity) if args.ls_weight > 0 else (None, None)
-    model = KGCN(args, n_user, n_entity, n_relation, adj_entity, adj_relation, interaction_table, offset)
+    model = KGCN(args, n_user, n_entity, n_relation, adj_entity, adj_relation)
 
     # top-K evaluation settings
     user_list, train_record, test_record, item_set, k_list = topk_settings(show_topk, train_data, test_data, n_item)
 
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
-        if args.ls_weight > 0:
-            interaction_table.init.run()
 
         for step in range(args.n_epochs):
             # training
@@ -50,21 +47,6 @@ def train(args, data, show_loss, show_topk):
                 for i in recall:
                     print('%.4f\t' % i, end='')
                 print('\n')
-
-
-# interaction_table is used for fetching user-item interaction label in LS regularization
-# key: user_id * 10^offset + item_id
-# value: y_{user_id, item_id}
-def get_interaction_table(train_data, n_entity):
-    offset = len(str(n_entity))
-    offset = 10 ** offset
-    keys = train_data[:, 0] * offset + train_data[:, 1]
-    keys = keys.astype(np.int64)
-    values = train_data[:, 2].astype(np.float32)
-
-    interaction_table = tf.contrib.lookup.HashTable(
-        tf.contrib.lookup.KeyValueTensorInitializer(keys=keys, values=values), default_value=0.5)
-    return interaction_table, offset
 
 
 def topk_settings(show_topk, train_data, test_data, n_item):
