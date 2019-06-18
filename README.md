@@ -1,6 +1,6 @@
 # KGCN
 
-This repository is the implementation of KGCN ([arXiv](https://arxiv.org/abs/1901.08907)):
+This repository is the implementation of [KGCN](https://dl.acm.org/citation.cfm?id=3313417) ([arXiv](https://arxiv.org/abs/1904.12575)):
 
 > Knowledge Graph Convolutional Networks for Recommender Systems  
 Hongwei Wang, Miao Zhao, Xing Xie, Wenjie Li, Minyi Guo.  
