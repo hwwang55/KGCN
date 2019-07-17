@@ -35,12 +35,12 @@ KGCN is **K**nowledge **G**raph **C**onvolutional **N**etworks for recommender s
   $ unzip ml-20m.zip
   $ mv ml-20m/ratings.csv data/movie/
   $ cd src
-  $ python preprocess.py --dataset movie
+  $ python preprocess.py -d movie
   ```
 - Music
   - ```
     $ cd src
-    $ python preprocess.py --dataset music
+    $ python preprocess.py -d music
     ```
   - open `src/main.py` file;
     
