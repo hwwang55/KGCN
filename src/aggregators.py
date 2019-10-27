@@ -24,18 +24,17 @@ class Aggregator(object):
         self.batch_size = batch_size
         self.dim = dim
 
-    def __call__(self, self_vectors, neighbor_vectors, neighbor_relations, user_embeddings, masks):
-        outputs = self._call(self_vectors, neighbor_vectors, neighbor_relations, user_embeddings, masks)
+    def __call__(self, self_vectors, neighbor_vectors, neighbor_relations, user_embeddings):
+        outputs = self._call(self_vectors, neighbor_vectors, neighbor_relations, user_embeddings)
         return outputs
 
     @abstractmethod
-    def _call(self, self_vectors, neighbor_vectors, neighbor_relations, user_embeddings, masks):
+    def _call(self, self_vectors, neighbor_vectors, neighbor_relations, user_embeddings):
         # dimension:
         # self_vectors: [batch_size, -1, dim] ([batch_size, -1] for LabelAggregator)
         # neighbor_vectors: [batch_size, -1, n_neighbor, dim] ([batch_size, -1, n_neighbor] for LabelAggregator)
         # neighbor_relations: [batch_size, -1, n_neighbor, dim]
         # user_embeddings: [batch_size, dim]
-        # masks (only for LabelAggregator): [batch_size, -1]
         pass
 
     def _mix_neighbor_vectors(self, neighbor_vectors, neighbor_relations, user_embeddings):
@@ -69,7 +68,7 @@ class SumAggregator(Aggregator):
                 shape=[self.dim, self.dim], initializer=tf.contrib.layers.xavier_initializer(), name='weights')
             self.bias = tf.get_variable(shape=[self.dim], initializer=tf.zeros_initializer(), name='bias')
 
-    def _call(self, self_vectors, neighbor_vectors, neighbor_relations, user_embeddings, masks):
+    def _call(self, self_vectors, neighbor_vectors, neighbor_relations, user_embeddings):
         # [batch_size, -1, dim]
         neighbors_agg = self._mix_neighbor_vectors(neighbor_vectors, neighbor_relations, user_embeddings)
 
@@ -93,7 +92,7 @@ class ConcatAggregator(Aggregator):
                 shape=[self.dim * 2, self.dim], initializer=tf.contrib.layers.xavier_initializer(), name='weights')
             self.bias = tf.get_variable(shape=[self.dim], initializer=tf.zeros_initializer(), name='bias')
 
-    def _call(self, self_vectors, neighbor_vectors, neighbor_relations, user_embeddings, masks):
+    def _call(self, self_vectors, neighbor_vectors, neighbor_relations, user_embeddings):
         # [batch_size, -1, dim]
         neighbors_agg = self._mix_neighbor_vectors(neighbor_vectors, neighbor_relations, user_embeddings)
 
@@ -122,7 +121,7 @@ class NeighborAggregator(Aggregator):
                 shape=[self.dim, self.dim], initializer=tf.contrib.layers.xavier_initializer(), name='weights')
             self.bias = tf.get_variable(shape=[self.dim], initializer=tf.zeros_initializer(), name='bias')
 
-    def _call(self, self_vectors, neighbor_vectors, neighbor_relations, user_embeddings, masks):
+    def _call(self, self_vectors, neighbor_vectors, neighbor_relations, user_embeddings):
         # [batch_size, -1, dim]
         neighbors_agg = self._mix_neighbor_vectors(neighbor_vectors, neighbor_relations, user_embeddings)
 

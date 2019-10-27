@@ -91,8 +91,7 @@ class KGCN(object):
                 vector = aggregator(self_vectors=entity_vectors[hop],
                                     neighbor_vectors=tf.reshape(entity_vectors[hop + 1], shape),
                                     neighbor_relations=tf.reshape(relation_vectors[hop], shape),
-                                    user_embeddings=self.user_embeddings,
-                                    masks=None)
+                                    user_embeddings=self.user_embeddings)
                 entity_vectors_next_iter.append(vector)
             entity_vectors = entity_vectors_next_iter
 

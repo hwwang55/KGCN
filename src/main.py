@@ -18,7 +18,6 @@ parser.add_argument('--dim', type=int, default=32, help='dimension of user and e
 parser.add_argument('--n_iter', type=int, default=2, help='number of iterations when computing entity representation')
 parser.add_argument('--batch_size', type=int, default=65536, help='batch size')
 parser.add_argument('--l2_weight', type=float, default=1e-7, help='weight of l2 regularization')
-parser.add_argument('--ls_weight', type=float, default=0, help='weight of LS regularization')
 parser.add_argument('--lr', type=float, default=2e-2, help='learning rate')
 parser.add_argument('--ratio', type=float, default=1, help='size of training dataset')
 
@@ -32,7 +31,6 @@ parser.add_argument('--dim', type=int, default=64, help='dimension of user and e
 parser.add_argument('--n_iter', type=int, default=3, help='number of iterations when computing entity representation')
 parser.add_argument('--batch_size', type=int, default=256, help='batch size')
 parser.add_argument('--l2_weight', type=float, default=2e-5, help='weight of l2 regularization')
-parser.add_argument('--ls_weight', type=float, default=0, help='weight of LS regularization')
 parser.add_argument('--lr', type=float, default=2e-4, help='learning rate')
 parser.add_argument('--ratio', type=float, default=1, help='size of training dataset')
 '''
@@ -47,7 +45,6 @@ parser.add_argument('--dim', type=int, default=16, help='dimension of user and e
 parser.add_argument('--n_iter', type=int, default=1, help='number of iterations when computing entity representation')
 parser.add_argument('--batch_size', type=int, default=128, help='batch size')
 parser.add_argument('--l2_weight', type=float, default=1e-4, help='weight of l2 regularization')
-parser.add_argument('--ls_weight', type=float, default=0, help='weight of LS regularization')
 parser.add_argument('--lr', type=float, default=5e-4, help='learning rate')
 parser.add_argument('--ratio', type=float, default=1, help='size of training dataset')
 '''
