@@ -31,8 +31,8 @@ class Aggregator(object):
     @abstractmethod
     def _call(self, self_vectors, neighbor_vectors, neighbor_relations, user_embeddings):
         # dimension:
-        # self_vectors: [batch_size, -1, dim] ([batch_size, -1] for LabelAggregator)
-        # neighbor_vectors: [batch_size, -1, n_neighbor, dim] ([batch_size, -1, n_neighbor] for LabelAggregator)
+        # self_vectors: [batch_size, -1, dim]
+        # neighbor_vectors: [batch_size, -1, n_neighbor, dim]
         # neighbor_relations: [batch_size, -1, n_neighbor, dim]
         # user_embeddings: [batch_size, dim]
         pass
