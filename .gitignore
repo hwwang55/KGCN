@@ -101,3 +101,4 @@ data/music/*
 !data/music/item_index2entity_id.txt
 !data/music/kg.txt
 !data/music/user_artists.dat
+.vscode/

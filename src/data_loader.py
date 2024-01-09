@@ -42,7 +42,7 @@ def dataset_split(rating_np, args):
     train_indices = list(left - set(test_indices))
     if args.ratio < 1:
         train_indices = np.random.choice(list(train_indices), size=int(len(train_indices) * args.ratio), replace=False)
-
+    # sample record user_id, item_id, rating, timestamp /as integer/
     train_data = rating_np[train_indices]
     eval_data = rating_np[eval_indices]
     test_data = rating_np[test_indices]
@@ -104,3 +104,6 @@ def construct_adj(args, kg, entity_num):
         adj_relation[entity] = np.array([neighbors[i][1] for i in sampled_indices])
 
     return adj_entity, adj_relation
+
+
+#load_rating(args='movie')

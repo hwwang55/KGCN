@@ -29,6 +29,7 @@ def convert_rating():
     for line in open(file, encoding='utf-8').readlines()[1:]:
         array = line.strip().split(SEP[DATASET])
 
+        timestamp = array[3]
         # remove prefix and suffix quotation marks for BX dataset
         if DATASET == 'book':
             array = list(map(lambda x: x[1:-1], array))
@@ -44,11 +45,17 @@ def convert_rating():
         if rating >= THRESHOLD[DATASET]:
             if user_index_old not in user_pos_ratings:
                 user_pos_ratings[user_index_old] = set()
-            user_pos_ratings[user_index_old].add(item_index)
+            if DATASET == 'movie':
+                user_pos_ratings[user_index_old].add((item_index, timestamp))
+            else:
+                user_pos_ratings[user_index_old].add(item_index)
         else:
             if user_index_old not in user_neg_ratings:
                 user_neg_ratings[user_index_old] = set()
-            user_neg_ratings[user_index_old].add(item_index)
+            if DATASET == 'movie':
+                user_neg_ratings[user_index_old].add((item_index, timestamp))
+            else:
+                user_neg_ratings[user_index_old].add(item_index)
 
     print('converting rating file ...')
     writer = open('../data/' + DATASET + '/ratings_final.txt', 'w', encoding='utf-8')
@@ -61,12 +68,21 @@ def convert_rating():
         user_index = user_index_old2new[user_index_old]
 
         for item in pos_item_set:
-            writer.write('%d\t%d\t1\n' % (user_index, item))
+            if DATASET == 'movie':
+                item_id, timestamp = item
+                writer.write('%d\t%d\t1\t%s\n' % (user_index, item_id, timestamp))
+            else:
+                writer.write('%d\t%d\t1\n' % (user_index, item))
         unwatched_set = item_set - pos_item_set
         if user_index_old in user_neg_ratings:
-            unwatched_set -= user_neg_ratings[user_index_old]
+            unwatched_set -= user_neg_ratings[user_index_old] # from all items set, remove the negative rating films
         for item in np.random.choice(list(unwatched_set), size=len(pos_item_set), replace=False):
-            writer.write('%d\t%d\t0\n' % (user_index, item))
+            # only the movies which has not been watched by the user, are left
+            #if DATASET == 'movie':
+            #    item_id, timestamp = item
+            #   writer.write('%d\t%d\t1\t%d\n' % (user_index, item_id, timestamp))
+            #else:
+            writer.write('%d\t%d\t0\t-1\n' % (user_index, item))
     writer.close()
     print('number of users: %d' % user_cnt)
     print('number of items: %d' % len(item_set))
