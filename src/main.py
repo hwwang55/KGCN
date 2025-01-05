@@ -20,6 +20,9 @@ parser.add_argument('--batch_size', type=int, default=65536, help='batch size')
 parser.add_argument('--l2_weight', type=float, default=1e-7, help='weight of l2 regularization')
 parser.add_argument('--lr', type=float, default=2e-2, help='learning rate')
 parser.add_argument('--ratio', type=float, default=1, help='size of training dataset')
+parser.add_argument('--sampling_method', type=str, default='random',
+                    choices=['random', 'degree', 'relation', 'degree_relation'],
+                    help='sampling method to use')
 
 '''
 # book
@@ -33,6 +36,9 @@ parser.add_argument('--batch_size', type=int, default=256, help='batch size')
 parser.add_argument('--l2_weight', type=float, default=2e-5, help='weight of l2 regularization')
 parser.add_argument('--lr', type=float, default=2e-4, help='learning rate')
 parser.add_argument('--ratio', type=float, default=1, help='size of training dataset')
+parser.add_argument('--sampling_method', type=str, default='random',
+                    choices=['random', 'degree', 'relation', 'degree_relation'],
+                    help='sampling method to use')
 '''
 
 '''
@@ -47,6 +53,9 @@ parser.add_argument('--batch_size', type=int, default=128, help='batch size')
 parser.add_argument('--l2_weight', type=float, default=1e-4, help='weight of l2 regularization')
 parser.add_argument('--lr', type=float, default=5e-4, help='learning rate')
 parser.add_argument('--ratio', type=float, default=1, help='size of training dataset')
+parser.add_argument('--sampling_method', type=str, default='random',
+                    choices=['random', 'degree', 'relation', 'degree_relation'],
+                    help='sampling method to use')
 '''
 
 
